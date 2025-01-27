@@ -1,63 +1,37 @@
-import mongoose from 'mongoose';
-import { Article } from './models/Article';
-import dotenv from 'dotenv';
+import { faker } from "@faker-js/faker";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import { Article } from "./models/Article";
 
 dotenv.config();
 
+mongoose
+  .connect("mongodb://localhost:27017/search-articles")
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
-const sampleArticles = [
-  {
-    title: 'Introduction to Node.js',
-    content: 'Node.js is a powerful runtime for building server-side applications.',
-    author: 'John Doe',
-    tags: ['nodejs', 'javascript', 'backend'],
-  },
-  {
-    title: 'Getting Started with TypeScript',
-    content: 'TypeScript adds static typing to JavaScript, making it more robust.',
-    author: 'Jane Smith',
-    tags: ['typescript', 'javascript', 'frontend'],
-  },
-  {
-    title: 'Building REST APIs with Express',
-    content: 'Express is a popular framework for building RESTful APIs in Node.js.',
-    author: 'John Doe',
-    tags: ['express', 'nodejs', 'backend'],
-  },
-  {
-    title: 'MongoDB Basics',
-    content: 'MongoDB is a NoSQL database that stores data in flexible, JSON-like documents.',
-    author: 'Alice Johnson',
-    tags: ['mongodb', 'database', 'nosql'],
-  },
-  {
-    title: 'Advanced TypeScript Techniques',
-    content: 'Learn advanced TypeScript features like decorators and generics.',
-    author: 'Jane Smith',
-    tags: ['typescript', 'advanced', 'frontend'],
-  },
-];
+const generateArticles = () => {
+  return {
+    title: `Bug: ${faker.hacker.phrase()}`,
+    content: faker.lorem.paragraphs(3), 
+    tags: [faker.hacker.noun(), faker.hacker.adjective(), "bug"],
+    author: faker.internet.userName(),
+    createdAt: faker.date.past(), 
+  };
+};
 
-async function populateDatabase() {
+const populateDatabase = async () => {
   try {
-    await mongoose.connect('mongodb://localhost:27017/search-articles', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    } as mongoose.ConnectOptions);
+    // Generate 100 articles
+    const bugs = Array.from({ length: 100 }, generateArticles);
 
-    console.log('Connected to MongoDB');
-
-    await Article.deleteMany({});
-    console.log('Cleared existing articles');
-
-    await Article.insertMany(sampleArticles);
-    console.log('Inserted sample articles');
-
-    await mongoose.disconnect();
-    console.log('Disconnected from MongoDB');
+    await Article.insertMany(bugs);
+    console.log("100 articles inserted successfully!");
   } catch (error) {
-    console.error('Error populating database:', error);
+    console.error("Error inserting articles:", error);
+  } finally {
+    mongoose.connection.close();
   }
-}
+};
 
 populateDatabase();

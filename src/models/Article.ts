@@ -17,7 +17,22 @@ const ArticleSchema = new Schema<IArticle>({
 });
 
 // ArticleSchema.index({ title: 'text', author: 1, tags: 1 });
-ArticleSchema.index({ title: 'text', content: 'text' });
+// ArticleSchema.index({ title: 'text', content: 'text' });
+ArticleSchema.index(
+  {
+    title: 'text',
+    content: 'text',
+    tags: 'text',
+  },
+  {
+    weights: {
+      title: 10,
+      content: 5,
+      tags: 3,
+    },
+    name: 'full_text_search_index'
+  }
+)
 
 
 export const Article = model<IArticle>('Article', ArticleSchema);
